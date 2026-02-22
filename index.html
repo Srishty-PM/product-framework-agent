@@ -270,31 +270,125 @@ const STEP_COLORS = [
   '#EF4444','#14B8A6','#A855F7'
 ];
 
+// ─── PRODUCT TYPE DETECTION ───────────────────────────────────────────────────
+// Detects: marketplace_2sided, marketplace_3sided, consumer_app, b2b_saas, platform, other
+function detectProductType(problem) {
+  const p = problem.toLowerCase();
+  const marketplaceSignals = ['marketplace', 'platform for', 'connect', 'between', 'buyers and sellers', 'supply and demand', 'two-sided', 'host', 'freelance', 'gig', 'rent', 'hire', 'book'];
+  const b2bSignals = ['enterprise', 'b2b', 'businesses', 'companies', 'saas', 'software for', 'tool for teams', 'workflow'];
+  const consumerSignals = ['app', 'consumer', 'users', 'people who', 'social', 'personal'];
+  if (marketplaceSignals.some(s => p.includes(s))) return 'marketplace';
+  if (b2bSignals.some(s => p.includes(s))) return 'b2b_saas';
+  if (consumerSignals.some(s => p.includes(s))) return 'consumer_app';
+  return 'general';
+}
+
 // ─── FRAMEWORK STEPS ─────────────────────────────────────────────────────────
 const STEPS = [
   {
     id: 'segments', label: '01 — Customer Segments', icon: '◎',
-    prompt: (p) => `You are a senior PM in a product interview. Given: "${p}"
+    prompt: (p) => {
+      const type = detectProductType(p);
+      if (type === 'marketplace') {
+        return `You are a senior PM in a product interview. Given: "${p}"
 
-List 3-4 customer segments as bullets. For each bullet use this format:
+This is a MARKETPLACE — it is two-sided by nature. You MUST segment both sides separately.
+
+SUPPLY SIDE (who provides value / sellers / creators / hosts):
+- [Segment name]: [who they are] | Behaviour: [key trait] | Motivation: [why they join the marketplace]
+- [Segment name]: [who they are] | Behaviour: [key trait] | Motivation: [why they join the marketplace]
+
+DEMAND SIDE (who consumes value / buyers / fans / customers):
+- [Segment name]: [who they are] | Behaviour: [key trait] | Motivation: [why they use the marketplace]
+- [Segment name]: [who they are] | Behaviour: [key trait] | Motivation: [why they use the marketplace]
+
+Also note:
+- Chicken-and-egg risk: [which side is harder to acquire first and why]
+- Constrained side: [which side limits marketplace growth]
+
+Bullet points only. No prose. Max 200 words.`;
+      }
+      if (type === 'b2b_saas') {
+        return `You are a senior PM in a product interview. Given: "${p}"
+
+This is a B2B product — segment by both BUYER (who pays) and USER (who uses it) separately.
+
+BUYERS (decision makers / economic buyers):
+- [Segment name]: [role/company type] | Behaviour: [how they evaluate tools] | Motivation: [business outcome they care about]
+- [Segment name]: [role/company type] | Behaviour: [how they evaluate tools] | Motivation: [business outcome they care about]
+
+USERS (day-to-day operators):
+- [Segment name]: [role] | Behaviour: [how they work] | Motivation: [what makes their job easier]
+- [Segment name]: [role] | Behaviour: [how they work] | Motivation: [what makes their job easier]
+
+Also note:
+- Buying committee note: [who else influences the purchase]
+
+Bullet points only. No prose. Max 180 words.`;
+      }
+      return `You are a senior PM in a product interview. Given: "${p}"
+
+List 3-4 customer segments as bullets. For each:
 - [Segment name]: [who they are] | Behaviour: [key trait] | Motivation: [why they care]
 
-Bullet points only. No paragraphs. No intros. Max 4 segments. Under 150 words.`
+Be specific and behavioural, not just demographic. Bullet points only. No paragraphs. Max 150 words.`;
+    }
   },
   {
     id: 'painpoints', label: '02 — Pain Points by Segment', icon: '⚡',
-    prompt: (p, prev) => `You are a senior PM in a product interview. Segments: ${prev.segments}
+    prompt: (p, prev) => {
+      const type = detectProductType(p);
+      if (type === 'marketplace') {
+        return `You are a senior PM in a product interview.
+Segments: ${prev.segments}
 
-For each segment list 2 pain points as bullets. Format:
+This is a marketplace. List pain points for BOTH sides separately. For each segment, 2 pain points:
+
+SUPPLY SIDE:
 [Segment name]:
 - [Pain point]: [one sentence why it hurts] — Severity: High/Med/Low
 - [Pain point]: [one sentence why it hurts] — Severity: High/Med/Low
 
-Bullet points only. No intros. No paragraphs. Max 130 words.`
+DEMAND SIDE:
+[Segment name]:
+- [Pain point]: [one sentence why it hurts] — Severity: High/Med/Low
+- [Pain point]: [one sentence why it hurts] — Severity: High/Med/Low
+
+Also:
+- Liquidity problem: [specific friction between supply and demand meeting]
+
+Bullet points only. Max 180 words.`;
+      }
+      return `You are a senior PM in a product interview.
+Segments: ${prev.segments}
+
+For each segment list 2 pain points as bullets:
+[Segment name]:
+- [Pain point]: [one sentence why it hurts] — Severity: High/Med/Low
+- [Pain point]: [one sentence why it hurts] — Severity: High/Med/Low
+
+Bullet points only. No intros. Max 150 words.`;
+    }
   },
   {
     id: 'problemstatement', label: '03 — Problem Statement', icon: '◐',
-    prompt: (p, prev) => `You are a senior PM in a product interview. Given: "${p}"
+    prompt: (p, prev) => {
+      const type = detectProductType(p);
+      if (type === 'marketplace') {
+        return `You are a senior PM in a product interview. Given: "${p}"
+Segments: ${prev.segments}
+Pain points: ${prev.painpoints}
+
+Output as bullets:
+- SUPPLY PROBLEM: [what supply side can't do and why]
+- DEMAND PROBLEM: [what demand side can't do and why]
+- MARKETPLACE GAP: [why existing solutions fail to connect them]
+- OUR ADVANTAGE: [unique data or network effect we can build]
+- WHY NOW: [timing — what's changed in market/tech/behaviour]
+
+Bullet points only. Max 100 words.`;
+      }
+      return `You are a senior PM in a product interview. Given: "${p}"
 Segments: ${prev.segments}
 
 Output as bullets:
@@ -304,11 +398,26 @@ Output as bullets:
 - ADVANTAGE: [why we're uniquely placed to solve this]
 - WHY NOW: [one sentence on timing]
 
-Bullet points only. No paragraphs. Max 80 words.`
+Bullet points only. Max 80 words.`;
+    }
   },
   {
     id: 'hypothesis', label: '04 — Hypothesis', icon: '◈',
-    prompt: (p, prev) => `You are a senior PM in a product interview.
+    prompt: (p, prev) => {
+      const type = detectProductType(p);
+      if (type === 'marketplace') {
+        return `You are a senior PM in a product interview.
+Problem: ${prev.problemstatement}
+
+For a marketplace, hypotheses must address both sides and the matching mechanism. Output as bullets:
+- H1 (Supply acquisition): "We believe [X supply segment] will join if [condition] because [signal]. Validated if [metric]."
+- H2 (Demand conversion): "We believe [X demand segment] will transact if [condition] because [signal]. Validated if [metric]."
+- H3 (Liquidity): "We believe [matching mechanism] will drive [outcome] because [signal]. Validated if [metric]."
+- Priority: [which to test first — usually supply side — and why]
+
+Bullet points only. Max 120 words.`;
+      }
+      return `You are a senior PM in a product interview.
 Problem: ${prev.problemstatement}
 
 Output 2 hypotheses as bullets:
@@ -316,22 +425,60 @@ Output 2 hypotheses as bullets:
 - H2 (Product Mechanism): "We believe [X] because [signal]. Validated if [metric]."
 - Priority: [which to test first and one-line reason]
 
-Bullet points only. Max 100 words.`
+Bullet points only. Max 100 words.`;
+    }
   },
   {
     id: 'solutions', label: '05 — Solution Options', icon: '◆',
-    prompt: (p, prev) => `You are a senior PM in a product interview. Given: "${p}"
+    prompt: (p, prev) => {
+      const type = detectProductType(p);
+      if (type === 'marketplace') {
+        return `You are a senior PM in a product interview. Given: "${p}"
+Segments: ${prev.segments}
+
+For a marketplace, solutions must address supply, demand, or the matching layer. List 4 solutions as bullets:
+- [Solution name]: [what it does] | Solves: Supply/Demand/Matching | Complexity: Low/Med/High | Value: Quick/Medium/Long | Type: Incremental/Differentiated/Category-creating
+
+Include:
+- One supply-side acquisition solution
+- One demand-side conversion solution
+- One matching/discovery solution
+- One ML/network-effect solution
+
+Also note:
+- Chicken-and-egg strategy: [which side to seed first and how]
+
+Bullet points only. Max 200 words.`;
+      }
+      return `You are a senior PM in a product interview. Given: "${p}"
 
 List 4 solutions as bullets. For each:
 - [Solution name]: [one sentence what it does] | Segment: X | Complexity: Low/Med/High | Value: Quick/Medium/Long | Type: Incremental/Differentiated/Category-creating
 
-Include one ML/data-moat solution. Bullet points only. No paragraphs. Max 150 words.`
+Include one ML/data-moat solution. Bullet points only. Max 150 words.`;
+    }
   },
   {
     id: 'ml_opportunities', label: '06 — ML Opportunity Mapping', icon: '◈',
-    prompt: (p, prev) => `You are a senior PM who understands ML. Solutions: ${prev.solutions}
+    prompt: (p, prev) => {
+      const type = detectProductType(p);
+      if (type === 'marketplace') {
+        return `You are a senior PM who understands ML. Solutions: ${prev.solutions}
 
-For each solution output as bullets:
+For a marketplace, ML creates value primarily in matching, pricing, and fraud detection. For each solution:
+- [Solution]: ML needed? Yes/No/Optional | Type: [e.g. recommendation, dynamic pricing, fraud detection, NLP ranking] | Data moat: [what this platform uniquely learns over time]
+
+Then:
+- Top ML bet: [solution name]
+- What it learns: [what signal improves with more transactions]
+- Network effect: [how more supply/demand data improves the model]
+- Cold start approach: [how to handle new users/listings with no history]
+
+Bullet points only. Max 150 words.`;
+      }
+      return `You are a senior PM who understands ML. Solutions: ${prev.solutions}
+
+For each solution:
 - [Solution]: ML needed? Yes/No/Optional | Type: [ML type if yes] | Data moat: [unique platform advantage]
 
 Then:
@@ -339,13 +486,34 @@ Then:
 - What it predicts: [one sentence]
 - Why it's defensible: [one sentence]
 
-Bullet points only. Max 130 words.`
+Bullet points only. Max 130 words.`;
+    }
   },
   {
     id: 'data_strategy', label: '07 — Data & Feature Strategy', icon: '◆',
-    prompt: (p, prev) => `You are a senior PM who understands ML. Top ML solution: ${prev.ml_opportunities}
+    prompt: (p, prev) => {
+      const type = detectProductType(p);
+      if (type === 'marketplace') {
+        return `You are a senior PM who understands ML. Top ML solution: ${prev.ml_opportunities}
 
-Output as bullets:
+For a marketplace ML model, list features from BOTH sides of the market:
+
+Supply-side features:
+- [Specific signal] e.g. "response rate within 1 hour over last 30 days" ⚠ if proxy risk
+
+Demand-side features:
+- [Specific signal] e.g. "number of searches before first booking" ⚠ if proxy risk
+
+Matching features:
+- [Specific signal] e.g. "category overlap between supply listing tags and demand search terms"
+
+Cold Start:
+- New supply: [how to score new listings with no transaction history]
+- New demand: [how to personalise for new users with no behaviour]
+
+Bullet points only. Max 150 words.`;
+      }
+      return `You are a senior PM who understands ML. Top ML solution: ${prev.ml_opportunities}
 
 Features:
 - [Specific feature 1] ⚠ if proxy risk
@@ -355,15 +523,16 @@ Features:
 - [Specific feature 5]
 
 Cold Start:
-- [How to handle new users with no history — 2 bullets]
+- [How to handle new users — 2 bullets]
 
-Be concrete (e.g. "ratio of 5-star to 1-star reviews in last 12 months"). Bullet points only. Max 100 words.`
+Be concrete (e.g. "ratio of 5-star to 1-star reviews in last 12 months"). Max 100 words.`;
+    }
   },
   {
     id: 'prioritisation', label: '08 — RICE Prioritisation', icon: '◉',
     prompt: (p, prev) => `You are a senior PM in a product interview. Solutions: ${prev.solutions}
 
-Output a RICE scoring table with ALL rows and columns filled in. Use this exact format:
+Output a RICE scoring table with ALL rows filled. RICE Score = (Reach × Impact × Confidence) / Effort:
 
 | Solution | Reach (1-10) | Impact (1-10) | Confidence (1-10) | Effort (1-10) | RICE Score |
 |---|---|---|---|---|---|
@@ -372,17 +541,34 @@ Output a RICE scoring table with ALL rows and columns filled in. Use this exact 
 | [Solution 3] | X | X | X | X | XX.X |
 | [Solution 4] | X | X | X | X | XX.X |
 
-RICE Score = (Reach × Impact × Confidence) / Effort
-
 Then bullets:
 - Recommended sequence: [which to build first and why]
-- Strategic note: [any low-RICE solution still worth building long-term]`
+- Strategic note: [any low-RICE solution still worth building for strategic reasons]`
   },
   {
     id: 'tradeoffs', label: '09 — Tradeoffs & Risks', icon: '◯',
-    prompt: (p, prev) => `You are a senior PM in a product interview. Top solutions: ${prev.prioritisation}
+    prompt: (p, prev) => {
+      const type = detectProductType(p);
+      if (type === 'marketplace') {
+        return `You are a senior PM in a product interview. Top solutions: ${prev.prioritisation}
 
-For the top 2 solutions, output risks as bullets:
+For a marketplace, risks must include supply-demand balance risks. For the top 2 solutions:
+
+[Solution 1 name]:
+- [Risk type]: [one frank sentence]
+- [Risk type]: [one frank sentence]
+- Marketplace-specific risk: [disintermediation / liquidity collapse / side-switching]
+
+[Solution 2 name]:
+- [Risk type]: [one frank sentence]
+- [Risk type]: [one frank sentence]
+- Marketplace-specific risk: [disintermediation / liquidity collapse / side-switching]
+
+Risk types: Technical, ML, Adoption, Regulatory, Competitive, Liquidity, Disintermediation. Max 140 words.`;
+      }
+      return `You are a senior PM in a product interview. Top solutions: ${prev.prioritisation}
+
+For the top 2 solutions:
 
 [Solution 1 name]:
 - [Risk type]: [one frank sentence]
@@ -392,31 +578,62 @@ For the top 2 solutions, output risks as bullets:
 - [Risk type]: [one frank sentence]
 - [Risk type]: [one frank sentence]
 
-Risk types: Technical, ML, Adoption, Regulatory, Competitive. Bullet points only. Max 120 words.`
+Risk types: Technical, ML, Adoption, Regulatory, Competitive. Bullet points only. Max 120 words.`;
+    }
   },
   {
     id: 'metrics', label: '10 — Success Metrics', icon: '◎',
-    prompt: (p, prev) => `You are a senior PM in a product interview. Given: "${p}"
+    prompt: (p, prev) => {
+      const type = detectProductType(p);
+      if (type === 'marketplace') {
+        return `You are a senior PM in a product interview. Given: "${p}"
 
-Use ONLY industry-standard metrics (bounce rate, churn rate, DAU/MAU, conversion rate, adoption rate, retention rate, NPS, LTV, CAC, activation rate, feature usage rate). For each metric explain how it applies specifically to this product context.
-
-Output as bullets:
+For a marketplace, use marketplace-specific industry metrics. Format each as: [Metric]: [definition] → In this context: [how it applies specifically here]
 
 NORTH STAR:
-- [Industry metric name]: [what it measures generically] → In this context: [how it applies here]
+- GMV (Gross Merchandise Value) or Liquidity Rate: [definition] → [specific context]
 
-LEADING INDICATORS:
-- [Industry metric]: [generic definition] → In this context: [specific application]
-- [Industry metric]: [generic definition] → In this context: [specific application]
+SUPPLY-SIDE METRICS:
+- Supply activation rate: [definition] → [specific context]
+- Average listing quality score: [definition] → [specific context]
 
-LAGGING INDICATORS:
-- [Industry metric]: [generic definition] → In this context: [specific application]
-- [Industry metric]: [generic definition] → In this context: [specific application]
+DEMAND-SIDE METRICS:
+- Conversion rate (browse to transaction): [definition] → [specific context]
+- Repeat purchase rate / retention: [definition] → [specific context]
+
+MARKETPLACE HEALTH:
+- Take rate: [definition] → [specific context]
+- Time to match (supply meets demand): [definition] → [specific context]
 
 GUARDRAIL:
-- [Industry metric]: [generic definition] → In this context: [specific application]
+- Disintermediation rate / NPS: [definition] → [specific context]
 
-Monday morning I'd check: [metric name and why]`
+Monday morning I'd check: [metric name and why it signals marketplace health]
+
+Max 200 words.`;
+      }
+      return `You are a senior PM in a product interview. Given: "${p}"
+
+Use ONLY industry-standard metrics (bounce rate, churn rate, DAU/MAU, conversion rate, adoption rate, retention rate, NPS, LTV, CAC, activation rate). For each: [Metric]: [what it measures] → In this context: [specific application]
+
+NORTH STAR:
+- [Metric]: [definition] → [specific context]
+
+LEADING INDICATORS:
+- [Metric]: [definition] → [specific context]
+- [Metric]: [definition] → [specific context]
+
+LAGGING INDICATORS:
+- [Metric]: [definition] → [specific context]
+- [Metric]: [definition] → [specific context]
+
+GUARDRAIL:
+- [Metric]: [definition] → [specific context]
+
+Monday morning I'd check: [metric and why]
+
+Max 180 words.`;
+    }
   }
 ];
 
