@@ -276,104 +276,147 @@ const STEPS = [
     id: 'segments', label: '01 — Customer Segments', icon: '◎',
     prompt: (p) => `You are a senior PM in a product interview. Given: "${p}"
 
-Name 3-4 customer segments. For each, give ONE line only:
-Format: [Segment name] — [who they are] | Behaviour: [key trait] | Motivation: [why they care]
+List 3-4 customer segments as bullets. For each bullet use this format:
+- [Segment name]: [who they are] | Behaviour: [key trait] | Motivation: [why they care]
 
-Be specific and behavioural. No paragraphs. Max 4 segments. Total response under 150 words.`
+Bullet points only. No paragraphs. No intros. Max 4 segments. Under 150 words.`
   },
   {
     id: 'painpoints', label: '02 — Pain Points by Segment', icon: '⚡',
     prompt: (p, prev) => `You are a senior PM in a product interview. Segments: ${prev.segments}
 
-For each segment, list 2 pain points only. Format:
-[Segment]: 
-- [Pain point name]: [one sentence on why it hurts] [High/Med/Low]
+For each segment list 2 pain points as bullets. Format:
+[Segment name]:
+- [Pain point]: [one sentence why it hurts] — Severity: High/Med/Low
+- [Pain point]: [one sentence why it hurts] — Severity: High/Med/Low
 
-Skip intros. Max 120 words total.`
+Bullet points only. No intros. No paragraphs. Max 130 words.`
   },
   {
     id: 'problemstatement', label: '03 — Problem Statement', icon: '◐',
     prompt: (p, prev) => `You are a senior PM in a product interview. Given: "${p}"
 Segments: ${prev.segments}
 
-Write ONE crisp problem statement (2-3 sentences max) using:
-"[Who] can't [do X] because [root cause]. This costs them [consequence]. We're uniquely positioned to solve this because [platform's unique advantage]."
+Output as bullets:
+- WHO: [primary user segment]
+- PROBLEM: [what they can't do and why]
+- COST: [consequence of the problem]
+- ADVANTAGE: [why we're uniquely placed to solve this]
+- WHY NOW: [one sentence on timing]
 
-Then ONE sentence: why now? Max 80 words total.`
+Bullet points only. No paragraphs. Max 80 words.`
   },
   {
     id: 'hypothesis', label: '04 — Hypothesis', icon: '◈',
     prompt: (p, prev) => `You are a senior PM in a product interview.
 Problem: ${prev.problemstatement}
 
-Write 2 testable hypotheses only. Format:
-"We believe [X] because [signal]. Validated if [metric]."
+Output 2 hypotheses as bullets:
+- H1 (User Behaviour): "We believe [X] because [signal]. Validated if [metric]."
+- H2 (Product Mechanism): "We believe [X] because [signal]. Validated if [metric]."
+- Priority: [which to test first and one-line reason]
 
-One on user behaviour, one on the product mechanism. Label which is Priority 1 and why in one sentence. Max 100 words.`
+Bullet points only. Max 100 words.`
   },
   {
     id: 'solutions', label: '05 — Solution Options', icon: '◆',
     prompt: (p, prev) => `You are a senior PM in a product interview. Given: "${p}"
 
-List 4 solutions. For each use EXACTLY this format:
-[Name] | Segment: X | Complexity: Low/Med/High | Value: Quick/Medium/Long | Type: Incremental/Differentiated/Category-creating
-→ [One sentence: what it does and why it's interesting]
+List 4 solutions as bullets. For each:
+- [Solution name]: [one sentence what it does] | Segment: X | Complexity: Low/Med/High | Value: Quick/Medium/Long | Type: Incremental/Differentiated/Category-creating
 
-Include one ML/data-moat solution. No paragraphs. Max 150 words.`
+Include one ML/data-moat solution. Bullet points only. No paragraphs. Max 150 words.`
   },
   {
     id: 'ml_opportunities', label: '06 — ML Opportunity Mapping', icon: '◈',
     prompt: (p, prev) => `You are a senior PM who understands ML. Solutions: ${prev.solutions}
 
-For each solution, one line:
-[Solution] | ML needed? Yes/No/Optional | If yes: [ML type] | Data moat: [what this platform has that competitors don't]
+For each solution output as bullets:
+- [Solution]: ML needed? Yes/No/Optional | Type: [ML type if yes] | Data moat: [unique platform advantage]
 
-Then pick the TOP ML bet and write 2 sentences: what it predicts, and why it's defensible. Max 120 words total.`
+Then:
+- Top ML bet: [solution name]
+- What it predicts: [one sentence]
+- Why it's defensible: [one sentence]
+
+Bullet points only. Max 130 words.`
   },
   {
     id: 'data_strategy', label: '07 — Data & Feature Strategy', icon: '◆',
     prompt: (p, prev) => `You are a senior PM who understands ML. Top ML solution: ${prev.ml_opportunities}
 
-List 5 concrete features only (be specific, e.g. "avg claim rate in same postcode over 24 months").
-Flag any proxy risks for protected characteristics inline with ⚠.
+Output as bullets:
 
-Then 2 sentences on cold start: how do you handle new users with no history?
+Features:
+- [Specific feature 1] ⚠ if proxy risk
+- [Specific feature 2]
+- [Specific feature 3]
+- [Specific feature 4]
+- [Specific feature 5]
 
-Max 100 words.`
+Cold Start:
+- [How to handle new users with no history — 2 bullets]
+
+Be concrete (e.g. "ratio of 5-star to 1-star reviews in last 12 months"). Bullet points only. Max 100 words.`
   },
   {
     id: 'prioritisation', label: '08 — RICE Prioritisation', icon: '◉',
     prompt: (p, prev) => `You are a senior PM in a product interview. Solutions: ${prev.solutions}
 
-Score each using RICE (Reach × Impact × Confidence / Effort, all 1-10):
-| Solution | R | I | C | E | Score |
+Output a RICE scoring table with ALL rows and columns filled in. Use this exact format:
 
-Then ONE sentence: what's your recommended sequencing and why. Max 100 words.`
+| Solution | Reach (1-10) | Impact (1-10) | Confidence (1-10) | Effort (1-10) | RICE Score |
+|---|---|---|---|---|---|
+| [Solution 1] | X | X | X | X | XX.X |
+| [Solution 2] | X | X | X | X | XX.X |
+| [Solution 3] | X | X | X | X | XX.X |
+| [Solution 4] | X | X | X | X | XX.X |
+
+RICE Score = (Reach × Impact × Confidence) / Effort
+
+Then bullets:
+- Recommended sequence: [which to build first and why]
+- Strategic note: [any low-RICE solution still worth building long-term]`
   },
   {
     id: 'tradeoffs', label: '09 — Tradeoffs & Risks', icon: '◯',
     prompt: (p, prev) => `You are a senior PM in a product interview. Top solutions: ${prev.prioritisation}
 
-For the top 2 solutions only, give 2 risks each:
-[Solution]:
-- [Risk type]: [one sentence — be specific and frank]
-- [Risk type]: [one sentence]
+For the top 2 solutions, output risks as bullets:
 
-Risk types: Technical, ML, Adoption, Regulatory, Competitive. Max 100 words.`
+[Solution 1 name]:
+- [Risk type]: [one frank sentence]
+- [Risk type]: [one frank sentence]
+
+[Solution 2 name]:
+- [Risk type]: [one frank sentence]
+- [Risk type]: [one frank sentence]
+
+Risk types: Technical, ML, Adoption, Regulatory, Competitive. Bullet points only. Max 120 words.`
   },
   {
     id: 'metrics', label: '10 — Success Metrics', icon: '◎',
     prompt: (p, prev) => `You are a senior PM in a product interview. Given: "${p}"
 
-Bullet format only:
-NORTH STAR: [metric name] — [one line why]
-LEADING (2): [metric] — [what it signals]
-LAGGING (2): [metric] — [what it confirms]
-GUARDRAIL (1): [metric] — [what it protects]
+Use ONLY industry-standard metrics (bounce rate, churn rate, DAU/MAU, conversion rate, adoption rate, retention rate, NPS, LTV, CAC, activation rate, feature usage rate). For each metric explain how it applies specifically to this product context.
 
-End with: "Monday morning I'd check: [X]"
+Output as bullets:
 
-Max 100 words. No extra headers.`
+NORTH STAR:
+- [Industry metric name]: [what it measures generically] → In this context: [how it applies here]
+
+LEADING INDICATORS:
+- [Industry metric]: [generic definition] → In this context: [specific application]
+- [Industry metric]: [generic definition] → In this context: [specific application]
+
+LAGGING INDICATORS:
+- [Industry metric]: [generic definition] → In this context: [specific application]
+- [Industry metric]: [generic definition] → In this context: [specific application]
+
+GUARDRAIL:
+- [Industry metric]: [generic definition] → In this context: [specific application]
+
+Monday morning I'd check: [metric name and why]`
   }
 ];
 
@@ -477,19 +520,55 @@ function toggleStep(id) {
 
 // ─── FORMAT RESULT ────────────────────────────────────────────────────────────
 function formatResult(text) {
-  return text.split('\n').map(line => {
-    if (!line.trim()) return '<div style="height:0.5rem"></div>';
-    if (line.startsWith('- ') || line.startsWith('• '))
-      return `<div class="result-bullet"><span class="result-bullet-dash">—</span><span class="result-bullet-text">${escHtml(line.replace(/^[-•]\s/,'').replace(/\*\*/g,''))}</span></div>`;
+  // Detect markdown table blocks and render them as HTML tables
+  const lines = text.split('\n');
+  const output = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    // Check if this is a table row
+    if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
+      // Collect all table lines
+      const tableLines = [];
+      while (i < lines.length && lines[i].trim().startsWith('|')) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      // Build HTML table
+      let tableHtml = '<div style="overflow-x:auto;margin:0.75rem 0"><table style="width:100%;border-collapse:collapse;font-size:0.75rem">';
+      tableLines.forEach((tl, ti) => {
+        if (tl.replace(/[\|\s\-]/g,'').length === 0) return; // skip separator row
+        const cells = tl.split('|').filter((_,ci) => ci > 0 && ci < tl.split('|').length - 1);
+        const tag = ti === 0 ? 'th' : 'td';
+        const rowStyle = ti === 0 ? 'background:#0d1421' : (ti % 2 === 0 ? 'background:#09101c' : 'background:#0b1219');
+        tableHtml += `<tr style="${rowStyle}">`;
+        cells.forEach(cell => {
+          tableHtml += `<${tag} style="padding:0.45rem 0.75rem;border:1px solid #1e293b;color:${ti===0?'#94a3b8':'#cbd5e1'};text-align:left;white-space:nowrap">${escHtml(cell.trim().replace(/\*\*/g,''))}</${tag}>`;
+        });
+        tableHtml += '</tr>';
+      });
+      tableHtml += '</table></div>';
+      output.push(tableHtml);
+      continue;
+    }
+    // Normal line rendering
+    if (!line.trim()) { output.push('<div style="height:0.5rem"></div>'); i++; continue; }
+    if (line.startsWith('- ') || line.startsWith('• ')) {
+      output.push(`<div class="result-bullet"><span class="result-bullet-dash">—</span><span class="result-bullet-text">${escHtml(line.replace(/^[-•]\s/,'').replace(/\*\*/g,''))}</span></div>`);
+      i++; continue;
+    }
     if (/^\d+\.\s/.test(line)) {
       const num = line.match(/^\d+/)[0];
-      return `<div class="result-numbered"><span class="result-num">${num}.</span><span class="result-bullet-text">${escHtml(line.replace(/^\d+\.\s/,'').replace(/\*\*/g,''))}</span></div>`;
+      output.push(`<div class="result-numbered"><span class="result-num">${num}.</span><span class="result-bullet-text">${escHtml(line.replace(/^\d+\.\s/,'').replace(/\*\*/g,''))}</span></div>`);
+      i++; continue;
     }
     const clean = line.replace(/\*\*/g,'');
     const isH = line.startsWith('#') || (line.endsWith(':') && line.length < 60 && !line.startsWith(' '));
-    if (isH) return `<div class="result-header">${escHtml(clean.replace(/^#+\s/,''))}</div>`;
-    return `<p class="result-p">${escHtml(clean)}</p>`;
-  }).join('');
+    if (isH) { output.push(`<div class="result-header">${escHtml(clean.replace(/^#+\s/,''))}</div>`); i++; continue; }
+    output.push(`<p class="result-p">${escHtml(clean)}</p>`);
+    i++;
+  }
+  return output.join('');
 }
 
 // markdown-aware formatter for PRD
@@ -529,7 +608,7 @@ function updateHeader() {
 async function callClaude(prompt, maxTokens = 400) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'x-api-key': apiKey, 'anthropic-dangerous-direct-browser-access': 'true' },
+    headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'x-api-key': apiKey },
     body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
   });
   const data = await res.json();
