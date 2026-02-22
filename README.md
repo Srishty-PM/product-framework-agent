@@ -1,5 +1,3 @@
-# product-framework-agent
-
 # Product Intelligence Agent — Framework Runner
 
 A browser-based PM aid that runs a full structured product framework from a single problem statement. No installs. No sign-ups. Just open and think.
