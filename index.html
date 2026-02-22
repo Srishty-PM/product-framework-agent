@@ -579,6 +579,7 @@ async function runFramework() {
   done.innerHTML = `<div><div class="done-label">Framework Complete</div><div class="done-text">All ${STEPS.length} stages generated — click any section to review</div></div><div class="done-count">${STEPS.length} / ${STEPS.length} ✓</div>`;
 
   // Unlock deliverables section
+  document.getElementById('deliverablesSection').style.display = 'block';
   document.getElementById('deliverablesIntro').textContent = 'Framework complete. Generate a prototype or PRD from your analysis — click either to start.';
   document.getElementById('protoBtn').disabled = false;
   document.getElementById('protoBtn').style.opacity = '1';
