@@ -53,10 +53,7 @@ You'll need a free Anthropic API key:
 
 ## About
 
-Built by [Srish](https://linkedin.com/in/srishty) — Lead PM at Tesco Technologies, building at the intersection of product and AI.
+Built by [Srishty Pahujani](https://linkedin.com/in/srishty) — PM at Tesco Technologies, building at the intersection of product and AI.
 
 If you find it useful, connect on LinkedIn or share with a PM who'd benefit.
 
----
-
-*The quality of what comes out depends entirely on the quality of the problem statement going in.*
